@@ -90,19 +90,21 @@ return_null:
 
 getAtMost:
   li t2, -1
-  beq a1, x0, end
 
 loop:
+  beq a1, x0, end
+
   lw t0, 0(a1)
+
   bgt t0, a0, go_left
+
   mv t2, t0
   ld a1, 16(a1)
-  bne a1, x0, loop
-  j end
+  j loop
 
 go_left:
   ld a1, 8(a1)
-  bne a1, x0, loop
+  j loop
 
 end:
   mv a0, t2
