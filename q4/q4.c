@@ -10,9 +10,16 @@ int main() {
         char path[16];
         snprintf(path, sizeof(path), "./lib%s.so", op);
         void* load = dlopen(path, RTLD_LAZY);
+        if(!load){
+            fprintf(stderr,"ERROR %s:%s\n",path,dlerror());
+            continue;
+        }
         typedef int (*fptr)(int, int);
         fptr fn = (fptr) dlsym(load, op);
-
+        if(!fn) {
+            fprintf(stderr,"ERROR %s:%s\n",path,dlerror());
+            continue;
+        }
         printf("%d\n", fn(num1, num2));
         dlclose(load);
     }
