@@ -8,7 +8,7 @@ make_node:
  sd ra,8(sp)
  sw a0,0(sp)
  li a0,24
- jal ra,malloc
+ call malloc
  beq a0,x0,null_done
  lw t0,0(sp)
  sw t0,0(a0)
@@ -21,7 +21,7 @@ null_done:
 insert:
  bne a0,x0,recursion
  mv a0,a1
- call make_node
+ j make_node
  ret
 recursion:
  addi sp,sp,-32
