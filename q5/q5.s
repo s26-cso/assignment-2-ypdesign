@@ -1,5 +1,5 @@
 .section .data
-filename: .string "input.txt"
+filename: .string "input.txt" # input file name
 mode:     .string "r"
 yes_str:  .string "Yes\n"
 no_str:   .string "No\n"
@@ -9,36 +9,36 @@ no_str:   .string "No\n"
 
 main:
     addi sp, sp, -64
-    sd   ra, 0(sp)
-    sd   s0, 8(sp)
-    sd   s1, 16(sp)
-    sd   s2, 24(sp)
-    sd   s3, 32(sp)
-    sd   s4, 40(sp)
-    sd   s5, 48(sp)
+    sd   ra, 0(sp) # return adress
+    sd   s0, 8(sp) # read from start
+    sd   s1, 16(sp ) # read from end
+    sd   s2, 24(sp) # loop counter
+    sd   s3, 32(sp) # file length
+    sd   s4, 40(sp) # char from start
+    sd   s5, 48(sp) # char from end
+
+    la   a0, filename
+    la   a1, mode
+    call fopen # opens input.txt
+    mv   s0, a0 # store firsts file handle
+    beqz s0, end_early # if any error while opening then close and exit
 
     la   a0, filename
     la   a1, mode
     call fopen
-    mv   s0, a0
-    beqz s0, end_early
-
-    la   a0, filename
-    la   a1, mode
-    call fopen
-    mv   s1, a0
-    beqz s1, close_left
+    mv   s1, a0  # store second file handle
+    beqz s1, close_left # if any error while handling then close and exit
 
     mv   a0, s1
     li   a1, 0
     li   a2, 2
-    call fseek
+    call fseek # move to end of file
 
     mv   a0, s1
-    call ftell
-    mv   s3, a0
+    call ftell # get the size of string inside input.txt
+    mv   s3, a0 # store the size of string
 
-    addi s3, s3, -1
+    addi s3, s3, -1 # the right pointer to the string
 
     mv   a0, s1
     mv   a1, s3
@@ -46,10 +46,10 @@ main:
     call fseek
 
     mv   a0, s1
-    call fgetc
-    li   t0, 10
+    call fgetc. # gets the next character
+    li   t0, 10 # newline character
     bne  a0, t0, init_loop
-    addi s3, s3, -1
+    addi s3, s3, -1 # ignore trailing space
 
 init_loop:
     li   s2, 0
@@ -58,8 +58,8 @@ check_loop:
     bge  s2, s3, print_yes
 
     mv   a0, s0
-    call fgetc
-    mv   s4, a0
+    call fgetc # read  char from start
+    mv   s4, a0 # store the start char
 
     mv   a0, s1
     mv   a1, s3
@@ -67,13 +67,13 @@ check_loop:
     call fseek
 
     mv   a0, s1
-    call fgetc
-    mv   s5, a0
+    call fgetc # read char from end
+    mv   s5, a0 # store the end char
 
-    bne  s4, s5, print_no
+    bne  s4, s5, print_no # if not equal then it is not an palindrome
 
-    addi s2, s2, 1
-    addi s3, s3, -1
+    addi s2, s2, 1 # increment loop counter
+    addi s3, s3, -1  # move end index left
     j    check_loop
 
 print_yes:
@@ -86,6 +86,7 @@ print_no:
     call printf
 
 cleanup:
+# close both file handles
     mv   a0, s0
     call fclose
     
@@ -106,5 +107,5 @@ end_early:
 
 close_left:
     mv   a0, s0
-    call fclose
+    call fclose # close first handle
     j    end_early
