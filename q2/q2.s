@@ -47,17 +47,20 @@ main:
    addi s3,a0,-1 # to shift to 0's indexing
    mv s6, a1
    li s5, 0
-
+  # checking the limit on no of elements in CLI is 1e9
+   li t0, 1000000000
+   bgt s3, t0, input_limit_error
+  # arr
    slli a0, s3, 2
    call malloc
    beq a0,x0, malloc_error
    mv s0,a0
-
+  # stack
    slli a0,s3,2
    call malloc
    beq a0,x0, malloc_error
    mv   s1, a0
-
+  # result
    slli a0,s3, 2
    call malloc
    beq a0,x0, malloc_error
@@ -179,9 +182,11 @@ print_done:
     ld s6, 56(sp)
     addi sp, sp, 80
     li   a0, 0
-    ret   
-malloc_error:
-  ld ra,  0(sp)
+    ret
+
+   input_limit_error:    
+    malloc_error:
+    ld ra,  0(sp)
     ld s0,  8(sp)
     ld s1, 16(sp)
     ld s2, 24(sp)
