@@ -10,12 +10,12 @@
 make_node:
  addi sp,sp,-16 
  sd ra,8(sp) # store the return adress
- sd a0,0(sp) # the int value(long long int)
+ sw a0,0(sp) # the int value( int)
  li a0,24
  call malloc
  beq a0,x0,null_done
- ld t0,0(sp) # load the value into temp register t0
- sd t0,0(a0) # node->value=value
+ lw t0,0(sp) # load the value into temp register t0
+ sw t0,0(a0) # node->value=value
  sd x0,8(a0) # node->left=NULL
  sd x0,16(a0) # node->right=NULL
 null_done:
@@ -34,7 +34,7 @@ recursion:
  sd s1,8(sp)
  mv s0,a0
  mv s1,a1
-ld t0,0(s0) # we load node->value
+ lw t0,0(s0) # we load node->value
  blt s1,t0,left # decides to go left or right
  j right
 left:
@@ -58,7 +58,7 @@ end_insert:
 # get function take a0 as root,a1 as value
 get:
  beq a0,x0,ret_null # null check on root
- ld t0,0(a0) # load the value
+ lw t0,0(a0) # load the value
  beq t0,a1,found # if we find the given value then go found part
  blt a1,t0,left_g # comparator to decide to go to left or right
 right_g:
@@ -77,7 +77,7 @@ getAtMost:
  li t2,-1
 loop:
  beq a1,x0,end # checks if equal to 0
- ld t0,0(a1) # loads the value
+ lw t0,0(a1) # loads the value
  bgt t0,a0,left_m # decides to go to which subtree
  mv t2,t0
  ld a1,16(a1)
