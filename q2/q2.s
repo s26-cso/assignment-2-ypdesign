@@ -1,13 +1,11 @@
 .section .rodata
-fmt_input:
-   .string "%d"
 fmt_out:
   .string "%d "
 fmt_out1:
   .string "%d\n"
 .section .text
 .globl main
-
+# stack_empty (if size == 0 then 1 else 0)
 stack_empty:
    beq a0, x0,empty
    li a0,0
@@ -15,16 +13,18 @@ stack_empty:
 empty:
    li a0, 1
    ret
+ # stack.top  returns the index on the top of stack
 stack.top:
   addi t1, a1 ,-1
   slli t1, t1, 2
   add t0, a0, t1
   lw a0, 0(t0) 
   ret
+  # stack.pop (decreases size by 1 )
 stack.pop:
 addi a0,a0,-1
 ret
-
+# we push the array index into the stack
 stack.push:
    slli t0 ,a1, 2 
    add t0, a0,t0
@@ -37,28 +37,32 @@ main:
    sd ra, 0(sp) 
    sd s0, 8(sp) # arr base
    sd s1, 16(sp) # stack base
-   sd s2, 24(sp) # stack top
+   sd s2, 24(sp) # stack size
    sd s3, 32(sp) # number of elements
    sd s4, 40(sp) # result arr base
    sd s5, 48(sp) # loop index
    sd s6, 56(sp)    # argv base
+  # malloc applied to the arrays 
 
-   addi s3,a0,-1
+   addi s3,a0,-1 # to shift to 0's indexing
    mv s6, a1
    li s5, 0
 
    slli a0, s3, 2
    call malloc
+   beq a0,x0, malloc_error
    mv s0,a0
 
    slli a0,s3,2
    call malloc
+   beq a0,x0, malloc_error
    mv   s1, a0
 
    slli a0,s3, 2
    call malloc
+   beq a0,x0, malloc_error
    mv s4, a0
-
+# Read each argv[i] and convert to int with atoi
   string_loop:
     bge s5,s3,done
 
@@ -79,26 +83,31 @@ main:
     addi s5, s3, -1
     li s2, 0
 
+# Build the monotonic stack from right to left
+# Store the next-greater candidate or -1 if none exists
+# Print the result array
  func_loop:
    blt s5, x0, exit
 
  inner_loop:
-   mv a0,s2
-   call stack_empty
-   bne a0,x0, inner_done
+  mv a0,s2
+  call stack_empty
+  bne a0,x0, inner_done
 
-   mv a0, s1
-   mv a1, s2
+  mv a0, s1
+  mv a1, s2
   call stack.top
 
   slli t0,a0, 2
   add t0, s0,t0
   lw t2,0(t0)
 
+   # we are targetting specific array element from base address bu adding offset
   slli t3,s5, 2
   add t4, s0,t3
   lw  t3,0(t4)
 
+  # check the contrasting condition of what should be there to continue the loop
   bgt t2,t3,inner_done
   mv a0,s2
   call stack.pop
@@ -109,10 +118,12 @@ inner_done:
   mv a0,s2
   call stack_empty
   bne a0,x0 ,store_neg
-
   mv a0, s1
   mv a1, s2
   call stack.top
+  slli t0, a0, 2
+  add t0, s0, t0
+  lw a0,0(t0)
   j store_final
 
 store_neg:
@@ -169,6 +180,19 @@ print_done:
     addi sp, sp, 80
     li   a0, 0
     ret   
+malloc_error:
+  ld ra,  0(sp)
+    ld s0,  8(sp)
+    ld s1, 16(sp)
+    ld s2, 24(sp)
+    ld s3, 32(sp)
+    ld s4, 40(sp)
+    ld s5, 48(sp)
+    ld s6, 56(sp)
+    addi sp, sp, 80
+    li   a0, 1
+    ret  
+   
 
 
 
