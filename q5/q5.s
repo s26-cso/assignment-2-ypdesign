@@ -46,7 +46,7 @@ main:
     call fseek
 
     mv   a0, s1
-    call fgetc. # gets the next character
+    call fgetc # gets the next character
     li   t0, 10 # newline character
     bne  a0, t0, init_loop
     addi s3, s3, -1 # ignore trailing space
@@ -108,4 +108,4 @@ end_early:
 close_left:
     mv   a0, s0
     call fclose # close first handle
-    j    end_early
+    j   end_early
